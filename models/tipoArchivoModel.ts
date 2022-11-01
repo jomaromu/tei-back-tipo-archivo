@@ -13,6 +13,10 @@ const tipoArchivoSchema = new Schema({
     ref: "userWorker",
     required: [true, "Es necesario el ID del creador"],
   },
+  foranea: {
+    type: Schema.Types.ObjectId,
+    ref: "userWorker",
+  },
   nombre: { type: String },
   estado: { type: Boolean, default: true },
 });

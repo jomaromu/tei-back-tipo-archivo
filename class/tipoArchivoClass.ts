@@ -1,5 +1,7 @@
 import { Response } from "express";
 import { CallbackError } from "mongoose";
+const mongoose = require("mongoose");
+
 import Server from "./server";
 
 // Interfaces
@@ -12,12 +14,14 @@ export class TipoArchivo {
   constructor() {}
 
   crearTipoArchivo(req: any, resp: Response): void {
-    const idCreador = req.usuario._id;
+    const idCreador = new mongoose.Types.ObjectId(req.usuario._id);
+    const foranea = new mongoose.Types.ObjectId(req.body.foranea);
     const nombre = req.body.nombre;
     const estado: boolean = req.body.estado;
 
     const nuevoTipoArchivo = new tipoArchivoModel({
       idCreador,
+      foranea,
       nombre,
       estado,
     });
@@ -42,11 +46,14 @@ export class TipoArchivo {
   }
 
   async editarTipoArchivo(req: any, resp: Response): Promise<any> {
-    const id = req.get("id");
+    const _id = new mongoose.Types.ObjectId(req.body.id);
+    const foranea = new mongoose.Types.ObjectId(req.body.foranea);
     const nombre = req.body.nombre;
     const estado: boolean = req.body.estado;
 
-    const respTipoArchivo = await tipoArchivoModel.findById(id).exec();
+    const respTipoArchivo = await tipoArchivoModel
+      .findOne({ _id, foranea })
+      .exec();
 
     if (!respTipoArchivo) {
       return resp.json({
@@ -63,8 +70,8 @@ export class TipoArchivo {
         query.nombre = respTipoArchivo.nombre;
       }
 
-      tipoArchivoModel.findByIdAndUpdate(
-        id,
+      tipoArchivoModel.findOneAndUpdate(
+        { _id, foranea },
         query,
         { new: true },
         (err: CallbackError, tipoArchivoDB: any) => {
@@ -87,10 +94,11 @@ export class TipoArchivo {
   }
 
   obtenerTipoArchivo(req: any, resp: Response): void {
-    const id = req.get("id");
+    const _id = new mongoose.Types.ObjectId(req.get("id"));
+    const foranea = new mongoose.Types.ObjectId(req.get("foranea"));
 
-    tipoArchivoModel.findById(
-      id,
+    tipoArchivoModel.findOne(
+      { _id, foranea },
       (err: CallbackError, tipoArchivoDB: TipoArchivoInteface) => {
         if (err) {
           return resp.json({
@@ -116,8 +124,10 @@ export class TipoArchivo {
   }
 
   obtenerTiposArchivos(req: any, resp: Response): void {
+    const foranea = new mongoose.Types.ObjectId(req.get("foranea"));
+
     tipoArchivoModel.find(
-      {},
+      { foranea },
       (err: CallbackError, tiposArchivosDB: Array<TipoArchivoInteface>) => {
         if (err) {
           return resp.json({
@@ -136,10 +146,11 @@ export class TipoArchivo {
   }
 
   eliminarTipoArchivo(req: any, resp: Response): void {
-    const id = req.get("id");
+    const _id = new mongoose.Types.ObjectId(req.get("id"));
+    const foranea = new mongoose.Types.ObjectId(req.get("foranea"));
 
-    tipoArchivoModel.findById(
-      id,
+    tipoArchivoModel.findOne(
+      { _id, foranea },
       (err: CallbackError, tipoArchivoDB: TipoArchivoInteface) => {
         if (err) {
           return resp.json({
@@ -156,8 +167,8 @@ export class TipoArchivo {
           });
         }
 
-        tipoArchivoModel.findByIdAndDelete(
-          id,
+        tipoArchivoModel.findOneAndDelete(
+          { _id, foranea },
           {},
           (err: CallbackError, tipoArchivoDB: any) => {
             if (err) {
